@@ -1,21 +1,12 @@
-/*
- * Copyright 2016-present, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the license found in the
- * LICENSE file in the root directory of this source tree.
- *
- */
-
 /* jshint node: true, devel: true */
 'use strict';
 
-const 
+const
   bodyParser = require('body-parser'),
   config = require('config'),
   crypto = require('crypto'),
   express = require('express'),
-  https = require('https'),  
+  https = require('https'),
   request = require('request');
 
 var app = express();
@@ -31,7 +22,7 @@ app.use(express.static('public'));
  */
 
 // App Secret can be retrieved from the App Dashboard
-const APP_SECRET = (process.env.MESSENGER_APP_SECRET) ? 
+const APP_SECRET = (process.env.MESSENGER_APP_SECRET) ?
   process.env.MESSENGER_APP_SECRET :
   config.get('appSecret');
 
@@ -68,8 +59,8 @@ app.get('/webhook', function(req, res) {
     res.status(200).send(req.query['hub.challenge']);
   } else {
     console.error("Failed validation. Make sure the validation tokens match.");
-    res.sendStatus(403);          
-  }  
+    res.sendStatus(403);
+  }
 });
 
 
@@ -113,7 +104,7 @@ app.post('/webhook', function (req, res) {
 
     // Assume all went well.
     //
-    // You must send back a 200, within 20 seconds, to let us know you've 
+    // You must send back a 200, within 20 seconds, to let us know you've
     // successfully received the callback. Otherwise, the request will time out.
     res.sendStatus(200);
   }
@@ -128,7 +119,7 @@ app.get('/authorize', function(req, res) {
   var accountLinkingToken = req.query['account_linking_token'];
   var redirectURI = req.query['redirect_uri'];
 
-  // Authorization Code should be generated per user by the developer. This will 
+  // Authorization Code should be generated per user by the developer. This will
   // be passed to the Account Linking callback.
   var authCode = "1234567890";
 
@@ -154,7 +145,7 @@ function verifyRequestSignature(req, res, buf) {
   var signature = req.headers["x-hub-signature"];
 
   if (!signature) {
-    // For testing, let's log an error. In production, you should throw an 
+    // For testing, let's log an error. In production, you should throw an
     // error.
     console.error("Couldn't validate the signature.");
   } else {
@@ -186,14 +177,14 @@ function receivedAuthentication(event) {
   var timeOfAuth = event.timestamp;
 
   // The 'ref' field is set in the 'Send to Messenger' plugin, in the 'data-ref'
-  // The developer can set this to an arbitrary value to associate the 
+  // The developer can set this to an arbitrary value to associate the
   // authentication callback with the 'Send to Messenger' click event. This is
-  // a way to do account linking when the user clicks the 'Send to Messenger' 
+  // a way to do account linking when the user clicks the 'Send to Messenger'
   // plugin.
   var passThroughParam = event.optin.ref;
 
   console.log("Received authentication for user %d and page %d with pass " +
-    "through param '%s' at %d", senderID, recipientID, passThroughParam, 
+    "through param '%s' at %d", senderID, recipientID, passThroughParam,
     timeOfAuth);
 
   // When an authentication is received, we'll send a message back to the sender
@@ -221,7 +212,7 @@ function receivedMessage(event) {
   var timeOfMessage = event.timestamp;
   var message = event.message;
 
-  console.log("Received message for user %d and page %d at %d with message:", 
+  console.log("Received message for user %d and page %d at %d with message:",
     senderID, recipientID, timeOfMessage);
   console.log(JSON.stringify(message));
 
@@ -237,7 +228,7 @@ function receivedMessage(event) {
 
   if (isEcho) {
     // Just logging message echoes to console
-    console.log("Received echo for message %s and app %d with metadata %s", 
+    console.log("Received echo for message %s and app %d with metadata %s",
       messageId, appId, metadata);
     return;
   } else if (quickReply) {
@@ -289,19 +280,19 @@ function receivedMessage(event) {
 
       case 'quick reply':
         sendQuickReply(senderID);
-        break;        
+        break;
 
       case 'read receipt':
         sendReadReceipt(senderID);
-        break;        
+        break;
 
       case 'typing on':
         sendTypingOn(senderID);
-        break;        
+        break;
 
       case 'typing off':
         sendTypingOff(senderID);
-        break;        
+        break;
 
       case 'account linking':
         sendAccountLinking(senderID);
@@ -333,7 +324,7 @@ function receivedDeliveryConfirmation(event) {
 
   if (messageIDs) {
     messageIDs.forEach(function(messageID) {
-      console.log("Received delivery confirmation for message ID: %s", 
+      console.log("Received delivery confirmation for message ID: %s",
         messageID);
     });
   }
@@ -354,14 +345,14 @@ function receivedPostback(event) {
   var recipientID = event.recipient.id;
   var timeOfPostback = event.timestamp;
 
-  // The 'payload' param is a developer-defined field which is set in a postback 
-  // button for Structured Messages. 
+  // The 'payload' param is a developer-defined field which is set in a postback
+  // button for Structured Messages.
   var payload = event.postback.payload;
 
-  console.log("Received postback for user %d and page %d with payload '%s' " + 
+  console.log("Received postback for user %d and page %d with payload '%s' " +
     "at %d", senderID, recipientID, payload, timeOfPostback);
 
-  // When a postback is called, we'll send a message back to the sender to 
+  // When a postback is called, we'll send a message back to the sender to
   // let them know it was successful
   sendTextMessage(senderID, "Postback called");
 }
@@ -563,7 +554,7 @@ function sendButtonMessage(recipientId) {
         }
       }
     }
-  };  
+  };
 
   callSendAPI(messageData);
 }
@@ -585,7 +576,7 @@ function sendGenericMessage(recipientId) {
           elements: [{
             title: "rift",
             subtitle: "Next-generation virtual reality",
-            item_url: "https://www.oculus.com/en-us/rift/",               
+            item_url: "https://www.oculus.com/en-us/rift/",
             image_url: SERVER_URL + "/assets/rift.png",
             buttons: [{
               type: "web_url",
@@ -599,7 +590,7 @@ function sendGenericMessage(recipientId) {
           }, {
             title: "touch",
             subtitle: "Your Hands, Now in VR",
-            item_url: "https://www.oculus.com/en-us/touch/",               
+            item_url: "https://www.oculus.com/en-us/touch/",
             image_url: SERVER_URL + "/assets/touch.png",
             buttons: [{
               type: "web_url",
@@ -614,7 +605,7 @@ function sendGenericMessage(recipientId) {
         }
       }
     }
-  };  
+  };
 
   callSendAPI(messageData);
 }
@@ -639,8 +630,8 @@ function sendReceiptMessage(recipientId) {
           recipient_name: "Peter Chang",
           order_number: receiptId,
           currency: "USD",
-          payment_method: "Visa 1234",        
-          timestamp: "1428444852", 
+          payment_method: "Visa 1234",
+          timestamp: "1428444852",
           elements: [{
             title: "Oculus Rift",
             subtitle: "Includes: headset, sensor, remote",
@@ -793,7 +784,7 @@ function sendAccountLinking(recipientId) {
         }
       }
     }
-  };  
+  };
 
   callSendAPI(messageData);
 }
@@ -816,16 +807,16 @@ function callSendAPI(messageData) {
       var messageId = body.message_id;
 
       if (messageId) {
-        console.log("Successfully sent message with id %s to recipient %s", 
+        console.log("Successfully sent message with id %s to recipient %s",
           messageId, recipientId);
       } else {
-      console.log("Successfully called Send API for recipient %s", 
+      console.log("Successfully called Send API for recipient %s",
         recipientId);
       }
     } else {
       console.error(response.error);
     }
-  });  
+  });
 }
 
 // Start server
