@@ -1,5 +1,5 @@
 logs
-idea
+.idea
 config/*.json
 *.log
 pids
